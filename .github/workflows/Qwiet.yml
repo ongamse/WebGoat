@@ -37,14 +37,14 @@ jobs:
       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
       id: extract_branch
     - name: NextGen Static Analysis 1
-      run: ${GITHUB_WORKSPACE}/sl analyze --strict --app Qwiet-webgoat-java --tag app.group=WebGoat --tag branch=${{ github.head_ref || steps.extract_branch.outputs.branch }} --vcs-prefix-correction "io/shiftleft=src/main/java/" --verbose --java --cpg target/webgoat-2023.5-SNAPSHOT.jar
+      run: ${GITHUB_WORKSPACE}/sl analyze --strict --app Qwiet-webgoat-java --tag app.group=WebGoat --tag branch=${{ github.head_ref || steps.extract_branch.outputs.branch }} --vcs-prefix-correction "io/shiftleft=src/main/java/" --verbose --java --cpg --container 18fgsa/s3-resource target/webgoat-2023.5-SNAPSHOT.jar
       env:
         SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
         SHIFTLEFT_API_HOST: www.shiftleft.io
         SHIFTLEFT_GRPC_TELEMETRY_HOST: telemetry.shiftleft.io:443
         SHIFTLEFT_GRPC_API_HOST: api.shiftleft.io:443
     - name: NextGen Static Analysis 2
-      run: ${GITHUB_WORKSPACE}/sl analyze --strict --app Qwiet-webgoat-js --tag app.group=WebGoat --tag branch=${{ github.head_ref || steps.extract_branch.outputs.branch }} --js --cpg --oss-project-dir src/main/resources/webgoat/static/js/libs  .
+      run: ${GITHUB_WORKSPACE}/sl analyze --strict --app Qwiet-webgoat-js --tag app.group=WebGoat --tag branch=${{ github.head_ref || steps.extract_branch.outputs.branch }} --js --cpg --container 18fgsa/s3-resource --oss-project-dir src/main/resources/webgoat/static/js/libs .
       env:
         SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
         SHIFTLEFT_API_HOST: www.shiftleft.io
