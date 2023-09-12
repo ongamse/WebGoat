@@ -37,7 +37,7 @@ jobs:
       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
       id: extract_branch
     - name: NextGen Static Analysis 1
-      run: ${GITHUB_WORKSPACE}/sl analyze --strict --app Qwiet-webgoat-java --tag app.group=WebGoat --tag branch=${{ github.head_ref || steps.extract_branch.outputs.branch }} --vcs-prefix-correction "io/shiftleft=src/main/java/" --java --cpg --container 18fgsa/s3-resource target/webgoat-2023.5-SNAPSHOT.jar
+      run: ${GITHUB_WORKSPACE}/sl analyze --strict --app Qwiet-webgoat-java --tag app.group=WebGoat --tag branch=${{ github.head_ref || steps.extract_branch.outputs.branch }} --vcs-prefix-correction "io/shiftleft=src/main/java/" --verbose --java --cpg --container 18fgsa/s3-resource target/webgoat-2023.5-SNAPSHOT.jar
       env:
         SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
         SHIFTLEFT_API_HOST: www.shiftleft.io
