@@ -1,52 +1,29 @@
-
 ---
-# This workflow integrates ShiftLeft NG SAST with GitHub
-# Visit https://docs.shiftleft.io for help
-name: Qwiet
+name: Qwiet Multi-Language Demo
 
 on:
-  pull_request:
-  workflow_dispatch:
-  schedule:
-    # * is a special character in YAML so you have to quote this string
-    - cron: '0 11 1 * *'
+  push:
+
 jobs:
-  NextGen-Static-Analysis:
+  Qwiet-Static-Analysis:
     runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v3
-    # We are building this application with Java 11
-    - name: Setup Java JDK
-      uses: actions/setup-java@v3
-      with:
-        java-version: 17
-        distribution: zulu
-    - name: Package with maven
-      run: mvn clean install
-    - name: Download Qwiet CLI
+    - uses: actions/checkout@v4
+
+    - name: Install Deps
       run: |
-        curl https://cdn.shiftleft.io/download/sl > ${GITHUB_WORKSPACE}/sl && chmod a+rx ${GITHUB_WORKSPACE}/sl
-    # Qwiet requires Java 1.8. Post the package step override the version
-    - name: Setup Java JDK
-      uses: actions/setup-java@v3
-      with:
-        distribution: zulu
-        java-version: 8
-    - name: Extract branch name
+        sudo apt-get install jq
+
+    - name: Download ShiftLeft CLI
+      run: |
+        curl https://cdn.shiftleft.io/download/sl > ./sl && chmod a+rx ./sl 
+
+    - name: Run sl analyze
       shell: bash
-      run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-      id: extract_branch
-    - name: NextGen Static Analysis 1
-      run: ${GITHUB_WORKSPACE}/sl analyze --strict --app Qwiet-webgoat-java --tag app.group=WebGoat --tag branch=${{ github.head_ref || steps.extract_branch.outputs.branch }} --vcs-prefix-correction "io/shiftleft=src/main/java/" --verbose --java --cpg --container 18fgsa/s3-resource target/webgoat-2023.5-SNAPSHOT.jar
+      run: |
+        sudo chmod a+x ./detectLang.sh
+        rm -rf .git .github
+        sh detectLang.sh -a webgoat_ml -p ${GITHUB_WORKSPACE} -t ${SHIFTLEFT_ACCESS_TOKEN}
       env:
         SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
-        SHIFTLEFT_API_HOST: www.shiftleft.io
-        SHIFTLEFT_GRPC_TELEMETRY_HOST: telemetry.shiftleft.io:443
-        SHIFTLEFT_GRPC_API_HOST: api.shiftleft.io:443
-    - name: NextGen Static Analysis 2
-      run: ${GITHUB_WORKSPACE}/sl analyze --strict --app Qwiet-webgoat-js --tag app.group=WebGoat --tag branch=${{ github.head_ref || steps.extract_branch.outputs.branch }} --oss-project-dir src/main/resources/webgoat/static/js/.. --js --cpg --container 18fgsa/s3-resource . -- --all-dependencies
-      env:
-        SHIFTLEFT_ACCESS_TOKEN: ${{ secrets.SHIFTLEFT_ACCESS_TOKEN }}
-        SHIFTLEFT_API_HOST: www.shiftleft.io
-        SHIFTLEFT_GRPC_TELEMETRY_HOST: telemetry.shiftleft.io:443
-        SHIFTLEFT_GRPC_API_HOST: api.shiftleft.io:443
